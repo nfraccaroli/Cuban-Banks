@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Bancario Cubano — Explorer de Datos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{--bg:#f4f6fa;--panel:#fff;--card:#fff;--border:#e2e6ea;--border2:#cdd3da;--accent:#1a3a8f;--accent-l:#e8eef8;--red:#c0392b;--red-l:#fdecea;--gold:#9a6e0a;--gold-l:#fef8e7;--blue:#1a3a8f;--blue-l:#e8eef8;--pub:#1a3a8f;--pub-l:#e8eef8;--text:#1a202c;--muted:#5a6472;--dim:#9aa5b1;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;--sh:0 1px 3px rgba(0,0,0,.07)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);box-shadow:var(--sh);display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;gap:6px}
+.nav-brand{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13px;letter-spacing:-.3px;flex-shrink:0}
+.flag{display:inline-flex;gap:2px;align-items:center}
+.flag span{display:inline-block;width:8px;height:8px;border-radius:1px}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 2.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-right{font-family:var(--mono);font-size:9px;color:var(--dim);flex-shrink:0;white-space:nowrap}
+.nav-tabs{display:flex;gap:1px;flex-shrink:1;overflow:hidden}
+.nav-tab{padding:5px 9px;border-radius:5px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .15s;white-space:nowrap}
+.nav-tab:hover{color:var(--text);background:var(--bg)}
+.nav-tab.active{color:var(--accent);background:var(--accent-l)}
+.sel-panel{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--sh)}
+.sel-label{font-size:10px;font-family:var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg);color:var(--muted);transition:all .15s;white-space:nowrap}
+.pill:hover{border-color:var(--accent);color:var(--text)}
+.pill.ap{border-color:var(--text);color:var(--text);background:#eff1f4}
+.pill.apb{border-color:var(--pub);color:var(--pub);background:var(--pub-l)}
+.sep{width:1px;height:26px;background:var(--border);flex-shrink:0}
+.curr-btn{padding:4px 10px;border-radius:5px;font-size:11px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border2);background:var(--bg);color:var(--muted);transition:all .15s}
+.curr-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sel-wrap{position:relative}
+.sel-wrap select{appearance:none;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;font-weight:500;padding:6px 32px 6px 11px;border-radius:6px;cursor:pointer;outline:none;min-width:220px;box-shadow:var(--sh);transition:border-color .15s}
+.sel-wrap select:hover,.sel-wrap select:focus{border-color:var(--accent)}
+.sel-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none;font-size:11px}
+.main{padding:20px 22px 48px}
+.hero{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.hcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.hcard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.hb::after{background:var(--blue)}.hr::after{background:var(--red)}.hy::after{background:var(--gold)}.hg::after{background:#27ae60}.hp::after{background:#8e44ad}
+.hlbl{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+.hval{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;line-height:1}
+.hb .hval{color:var(--blue)}.hr .hval{color:var(--red)}.hy .hval{color:var(--gold)}.hg .hval{color:#27ae60}.hp .hval{color:#8e44ad}
+.hsub{font-size:10px;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+.view{display:none}.view.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;box-shadow:var(--sh)}
+.ctitle{font-size:10px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.mb14{margin-bottom:14px}.mb20{margin-bottom:20px}
+.br{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.brn{font-size:11px;color:var(--text);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brt{flex:1;height:12px;background:var(--bg);border-radius:2px;overflow:hidden;border:1px solid var(--border)}
+.brf{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.brv{font-family:var(--mono);font-size:10px;color:var(--muted);width:90px;text-align:right;flex-shrink:0}
+.ctx{background:var(--accent-l);border:1px solid rgba(26,58,143,.2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.75}
+.ctx strong{color:var(--text)}
+.warn{background:var(--gold-l);border:1px solid rgba(154,110,10,.2);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.warn strong{color:var(--text)}
+.tbl-wrap{overflow-x:auto}
+table.dtbl{width:100%;border-collapse:collapse;font-size:11px}
+.dtbl th{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:left;padding:0 10px 8px 0;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+.dtbl th:hover{color:var(--text)}.dtbl th.srt{color:var(--accent)}
+.dtbl td{padding:7px 10px 7px 0;border-bottom:1px solid var(--border);vertical-align:middle}
+.dtbl tr:hover td{background:#f8fafc}
+.mv{font-family:var(--mono);font-size:11px}
+.null-v{color:var(--dim);font-style:italic;font-size:10px;font-family:var(--mono)}
+.tbadge{display:inline-block;font-size:9px;font-family:var(--mono);padding:2px 6px;border-radius:3px}
+.tpub{background:var(--pub-l);color:var(--pub);border:1px solid rgba(26,58,143,.2)}
+.bdet{display:grid;grid-template-columns:270px 1fr;gap:18px;margin-bottom:20px}
+.bicard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;box-shadow:var(--sh)}
+.bname{font-size:17px;font-weight:700;letter-spacing:-.4px;line-height:1.2;margin-bottom:4px}
+.bcharts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sr{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--border)}
+.sr:last-child{border-bottom:none}
+.sn{font-size:11px;color:var(--muted)}.sv{font-size:13px;font-family:var(--mono);font-weight:500;color:var(--text)}
+.src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:14px;box-shadow:var(--sh)}
+.scname{font-weight:600;font-size:12px;margin-bottom:4px;color:var(--text)}
+.sdesc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.chip{display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:var(--mono);font-size:9px;color:var(--muted);margin-right:4px}
+.chip.warn-chip{background:var(--gold-l);border-color:rgba(154,110,10,.2);color:var(--gold)}
+.chip.ok{background:var(--accent-l);border-color:rgba(26,58,143,.2);color:var(--accent)}
+.gloss-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gloss-card{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:14px;box-shadow:var(--sh)}
+.gloss-es{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600;margin-bottom:3px}
+.gloss-en{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px}
+.gloss-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.gloss-formula{font-family:var(--mono);font-size:10px;color:var(--blue);background:var(--blue-l);padding:3px 7px;border-radius:4px;margin-top:5px;display:inline-block}
+.gloss-section{margin-bottom:28px}
+.gloss-title{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--dim);border-bottom:1px solid var(--border);padding-bottom:7px;margin-bottom:12px}
+svg.scatter{border:1px solid var(--border);border-radius:6px;background:#fff}
+.footer{border-top:1px solid var(--border);padding:10px 22px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dim);background:var(--panel);flex-wrap:wrap;gap:6px}
+@media(max-width:1000px){.hero{grid-template-columns:repeat(3,1fr)}.bdet{grid-template-columns:1fr}.bcharts{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.gloss-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.hero{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}.sel-panel{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    🇨🇺 Sistema Bancario Cubano
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('overview',this)">Resumen</button>
+    <button class="nav-tab" onclick="switchTab('compare',this)">Comparar</button>
+    <button class="nav-tab" onclick="switchTab('profit',this)">Rentabilidad</button>
+    <button class="nav-tab" onclick="switchTab('profile',this)">Perfil Banco</button>
+    <button class="nav-tab" onclick="switchTab('sources',this)">Fuentes</button>
+    <button class="nav-tab" onclick="switchTab('glossary',this)">Glosario</button>
+  </div>
+  <div class="nav-right">ÚLTIMA ACT. 2025 · DATOS EN CUP</div>
+</nav>
+
+<div class="sel-panel">
+  <span class="sel-label">Tipo</span>
+  <div class="pills">
+    <span class="pill ap" id="pill-all" onclick="filterType('all',this)">Todos</span>
+    <span class="pill" id="pill-pub" onclick="filterType('estatal',this)">Estatal</span>
+    <span class="pill" id="pill-mix" onclick="filterType('mixto',this)">Mixto/Soc.Anónima</span>
+  </div>
+  <div class="sep"></div>
+  <span class="sel-label">Moneda</span>
+  <button class="curr-btn active" id="btn-cup" onclick="setCurr('CUP')">CUP</button>
+  <button class="curr-btn" id="btn-usd" onclick="setCurr('USD')">USD</button>
+  <span style="font-size:10px;color:var(--dim);font-family:var(--mono)">Tasa oficial: 24 CUP/USD (BCC, 2024)</span>
+</div>
+
+<div class="main">
+
+<!-- ===== OVERVIEW ===== -->
+<div class="view active" id="view-overview">
+  <div class="hero">
+    <div class="hcard hb"><div class="hlbl">Bancos Activos</div><div class="hval" id="h-bancos">8</div><div class="hsub">incl. BCC (banco central)</div></div>
+    <div class="hcard hr"><div class="hlbl">Activos Totales Est.</div><div class="hval" id="h-assets">~480B</div><div class="hsub" id="h-assets-sub">CUP (estimado 2023)</div></div>
+    <div class="hcard hy"><div class="hlbl">Sistema</div><div class="hval">100%</div><div class="hsub">Propiedad estatal</div></div>
+    <div class="hcard hg"><div class="hlbl">Reforma Monetaria</div><div class="hval">2021</div><div class="hsub">Tarea Ordenamiento</div></div>
+    <div class="hcard hp"><div class="hlbl">Tasa de Cambio</div><div class="hval" id="h-rate">24</div><div class="hsub">CUP/USD oficial BCC</div></div>
+  </div>
+
+  <div class="ctx mb20">
+    <strong>Contexto del Sistema Bancario Cubano.</strong> El Banco Central de Cuba (BCC) fue creado en 1997 mediante la Ley No. 72, separando por primera vez las funciones de banca central de las comerciales. El sistema opera bajo control estatal pleno. En enero de 2021, la <strong>Tarea Ordenamiento</strong> unificó el peso cubano (CUP) y el peso convertible (CUC), eliminando la dualidad cambiaria y estableciendo una tasa oficial de 24 CUP por USD. El acceso al sistema SWIFT es limitado debido al bloqueo de Estados Unidos, lo que dificulta las transacciones internacionales. La disponibilidad de datos financieros auditados es <strong>muy reducida</strong>: ningún banco cubano publica estados financieros completos de acceso público.
+  </div>
+
+  <div class="warn">
+    <strong>Advertencia sobre los datos.</strong> Los bancos cubanos no están obligados a publicar balances auditados. Los valores de activos y cartera son estimaciones derivadas de reportes académicos, publicaciones del BCC y fuentes secundarias verificadas. Los campos marcados como <span class="null-v">N/D</span> son genuinamente no disponibles públicamente.
+  </div>
+
+  <div class="g2 mb14">
+    <div class="card">
+      <div class="ctitle">Activos Estimados por Banco (miles de millones CUP)</div>
+      <div id="bar-assets"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Composición del Sistema Bancario</div>
+      <div id="bar-type"></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--muted);line-height:1.7">
+        <strong>Bancos de depósito/comerciales:</strong> BANDEC, BPA, Banco Metropolitano, BFI, BEC, BICSA, Banco de Inversiones.<br>
+        <strong>Banco Central:</strong> BCC (no capta depósitos del público).<br>
+        Todos los bancos son de propiedad estatal, algunos con estructura de sociedad anónima (S.A.).
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb14">
+    <div class="ctitle">Tabla de Bancos — Datos Verificados</div>
+    <div class="tbl-wrap">
+      <table class="dtbl" id="main-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('name')">Institución</th>
+            <th onclick="sortTable('tipo')">Tipo</th>
+            <th onclick="sortTable('founded')">Fundado</th>
+            <th onclick="sortTable('assets')">Activos Est.</th>
+            <th onclick="sortTable('deposits')">Depósitos Est.</th>
+            <th onclick="sortTable('equity')">Patrimonio Est.</th>
+            <th onclick="sortTable('car')">CAR</th>
+            <th onclick="sortTable('npl')">NPL</th>
+            <th>Auditor</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COMPARE ===== -->
+<div class="view" id="view-compare">
+  <div class="warn">Los datos comparativos están limitados por la escasa divulgación pública. Las barras representan estimaciones relativas, no valores auditados absolutos.</div>
+  <div class="g2 mb14">
+    <div class="card">
+      <div class="ctitle">Activos Estimados Relativo (índice, BANDEC=100)</div>
+      <div id="cmp-assets"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Depósitos Estimados Relativo (índice, BANDEC=100)</div>
+      <div id="cmp-deposits"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Scatter: NPL estimado vs. Importancia Sistémica (tamaño de activos)</div>
+    <svg id="scatter-svg" class="scatter" width="100%" viewBox="0 0 600 300"></svg>
+    <div style="margin-top:8px;font-size:10px;color:var(--dim)">Nota: NPL ratio y métricas de rentabilidad no son datos oficiales; se muestran rangos estimados con fines comparativos.</div>
+  </div>
+</div>
+
+<!-- ===== PROFITABILITY ===== -->
+<div class="view" id="view-profit">
+  <div class="ctx mb20">
+    <strong>Métricas de Rentabilidad — Sistema Bancario Cubano.</strong> La rentabilidad del sector bancario cubano no se divulga públicamente. No existen estados de pérdidas y ganancias auditados disponibles para bancos individuales. El BCC publica únicamente estadísticas macroeconómicas agregadas. Las estimaciones académicas sugieren que el sistema bancario opera con márgenes comprimidos debido a tasas de interés controladas por el Estado y la presencia de crédito dirigido. La inflación post-Tarea Ordenamiento (estimada en 40–77% en 2021–2022) impactó negativamente los balances en términos reales.
+  </div>
+  <div class="warn"><strong>Todos los indicadores de rentabilidad (ROA, ROE, NIM) son no disponibles públicamente.</strong> Se presentan rangos estimados de la literatura académica.</div>
+  <div class="g3 mb14">
+    <div class="card">
+      <div class="ctitle">ROA Estimado Sistema (%)</div>
+      <div class="hval" style="color:var(--accent);font-size:28px;margin:10px 0">~0.3–0.8%</div>
+      <div class="hsub">Rango estimado; sin datos auditados</div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Margen Neto de Interés Est.</div>
+      <div class="hval" style="color:var(--red);font-size:28px;margin:10px 0">~2–4%</div>
+      <div class="hsub">Tasas fijadas administrativamente</div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Inflación (IPC 2022, ONE)</div>
+      <div class="hval" style="color:var(--gold);font-size:28px;margin:10px 0">~39%</div>
+      <div class="hsub">Fuente: ONEI Cuba 2022</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Contexto: Tasas de Interés Administrativas (BCC, 2024)</div>
+    <div class="g2">
+      <div>
+        <div class="sr"><span class="sn">Tasa activa máxima (crédito personal)</span><span class="sv">12.5%</span></div>
+        <div class="sr"><span class="sn">Tasa pasiva (depósito a plazo 1 año)</span><span class="sv">5.5%</span></div>
+        <div class="sr"><span class="sn">Tasa de refinanciamiento BCC</span><span class="sv">9.0%</span></div>
+        <div class="sr"><span class="sn">Tasa de encaje legal</span><span class="sv">10%</span></div>
+      </div>
+      <div>
+        <div class="sr"><span class="sn">Tasa depósito a la vista</span><span class="sv">1.0%</span></div>
+        <div class="sr"><span class="sn">Tasa crédito agrícola (BANDEC)</span><span class="sv">5.0%</span></div>
+        <div class="sr"><span class="sn">Tipo de cambio oficial (CUP/USD)</span><span class="sv">24.00</span></div>
+        <div class="sr"><span class="sn">Mercado informal (referencia)</span><span class="sv">~200–250</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE ===== -->
+<div class="view" id="view-profile">
+  <div class="sel-panel" style="position:static;border:none;padding:0 0 16px 0;box-shadow:none;background:transparent">
+    <span class="sel-label">Seleccionar Banco</span>
+    <div class="sel-wrap"><select id="bank-select" onchange="renderProfile()"></select></div>
+  </div>
+  <div id="profile-content"></div>
+</div>
+
+<!-- ===== SOURCES ===== -->
+<div class="view" id="view-sources">
+  <div class="ctx mb20">
+    <strong>Disponibilidad de Datos.</strong> El sistema bancario cubano presenta una de las menores tasas de divulgación financiera en América Latina. El BCC publica informes anuales parciales y estadísticas monetarias agregadas. Los bancos individuales no están sujetos a requisitos de divulgación pública comparables a los estándares internacionales (IFRS, US GAAP). La mayoría de estimaciones académicas provienen de fuentes cubanas oficiales, CEPAL, y análisis de organismos internacionales.
+  </div>
+  <div class="src-grid">
+    <div class="scard">
+      <div class="scname">Banco Central de Cuba (BCC)</div>
+      <div class="sdesc">Informes anuales, resoluciones bancarias, estadísticas monetarias. Publicación parcial e irregular.</div>
+      <span class="chip warn-chip">Acceso limitado</span><span class="chip">bc.gob.cu</span>
+    </div>
+    <div class="scard">
+      <div class="scname">ONEI — Oficina Nacional de Estadística e Información</div>
+      <div class="sdesc">Anuario estadístico de Cuba. Incluye indicadores macroeconómicos y monetarios agregados.</div>
+      <span class="chip ok">Público</span><span class="chip">onei.gob.cu</span>
+    </div>
+    <div class="scard">
+      <div class="scname">CEPAL — Comisión Económica para América Latina</div>
+      <div class="sdesc">Perfiles de país Cuba, estadísticas financieras regionales, análisis de reforma monetaria.</div>
+      <span class="chip ok">Público</span><span class="chip">cepal.org</span>
+    </div>
+    <div class="scard">
+      <div class="scname">Gaceta Oficial de Cuba</div>
+      <div class="sdesc">Leyes bancarias, decretos-ley, resoluciones del BCC. Fuente primaria para marco regulatorio.</div>
+      <span class="chip ok">Público</span><span class="chip">gacetaoficial.gob.cu</span>
+    </div>
+    <div class="scard">
+      <div class="scname">FMI — Article IV Consultation</div>
+      <div class="sdesc">Cuba no es miembro activo del FMI desde 1964. No existen consultaciones Article IV recientes.</div>
+      <span class="chip warn-chip">No disponible</span>
+    </div>
+    <div class="scard">
+      <div class="scname">BIS — Bank for International Settlements</div>
+      <div class="sdesc">Estadísticas bancarias internacionales. Cuba tiene cobertura muy limitada por restricciones de acceso.</div>
+      <span class="chip warn-chip">Cobertura mínima</span><span class="chip">bis.org</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">Marco Legal Bancario</div>
+    <div class="sr"><span class="sn">Ley No. 72 (1997)</span><span class="sv">Crea el BCC como banco central independiente</span></div>
+    <div class="sr"><span class="sn">Decreto-Ley 173 (1997)</span><span class="sv">Regula los bancos e instituciones financieras no bancarias</span></div>
+    <div class="sr"><span class="sn">Decreto-Ley 289 (2011)</span><span class="sv">Servicios financieros a personas naturales</span></div>
+    <div class="sr"><span class="sn">Resolución 111/2021 BCC</span><span class="sv">Implementación Tarea Ordenamiento — unificación monetaria</span></div>
+    <div class="sr"><span class="sn">Decreto 33/2021</span><span class="sv">Eliminación del CUC, tipo de cambio único 24 CUP/USD</span></div>
+  </div>
+</div>
+
+<!-- ===== GLOSSARY ===== -->
+<div class="view" id="view-glossary">
+  <div class="gloss-section">
+    <div class="gloss-title">Instituciones y Siglas</div>
+    <div class="gloss-grid">
+      <div class="gloss-card"><div class="gloss-es">BCC</div><div class="gloss-en">Banco Central de Cuba</div><div class="gloss-desc">Autoridad monetaria y supervisora del sistema financiero cubano. Fundado en 1997 separando funciones del Banco Nacional de Cuba.</div></div>
+      <div class="gloss-card"><div class="gloss-es">BANDEC</div><div class="gloss-en">Banco de Crédito y Comercio</div><div class="gloss-desc">Principal banco comercial estatal. Foco en sector agropecuario, empresas estatales y pequeñas actividades económicas. Fundado 1997.</div></div>
+      <div class="gloss-card"><div class="gloss-es">BPA</div><div class="gloss-en">Banco Popular de Ahorro</div><div class="gloss-desc">Banco de ahorro y crédito al por menor. Mayor red de sucursales del país. Fundado 1983 como institución de ahorro popular.</div></div>
+      <div class="gloss-card"><div class="gloss-es">BFI</div><div class="gloss-en">Banco Financiero Internacional S.A.</div><div class="gloss-desc">Opera en divisas y finanzas internacionales. Fundado 1984. Sociedad anónima de propiedad estatal.</div></div>
+      <div class="gloss-card"><div class="gloss-es">BEC</div><div class="gloss-en">Banco Exterior de Cuba S.A.</div><div class="gloss-desc">Especializado en operaciones de comercio exterior. Fundado 1999. Vinculado al Ministerio de Comercio Exterior.</div></div>
+      <div class="gloss-card"><div class="gloss-es">BICSA</div><div class="gloss-en">Banco Internacional de Comercio S.A.</div><div class="gloss-desc">Banco de comercio internacional. Fundado 1993 como sociedad anónima. Opera en divisas y transacciones internacionales.</div></div>
+    </div>
+  </div>
+  <div class="gloss-section">
+    <div class="gloss-title">Términos Contables y Regulatorios</div>
+    <div class="gloss-grid">
+      <div class="gloss-card"><div class="gloss-es">CUP</div><div class="gloss-en">Peso Cubano</div><div class="gloss-desc">Moneda nacional de Cuba desde la Tarea Ordenamiento (enero 2021). Sustituyó al sistema dual CUP/CUC. Tipo de cambio oficial: 24 CUP = 1 USD.</div></div>
+      <div class="gloss-card"><div class="gloss-es">CUC (abolido 2021)</div><div class="gloss-en">Peso Cubano Convertible</div><div class="gloss-desc">Segunda moneda cubana 1994–2021. Vinculada al dólar (1 CUC = 1 USD). Eliminada por la Tarea Ordenamiento en enero 2021.</div></div>
+      <div class="gloss-card"><div class="gloss-es">Tarea Ordenamiento</div><div class="gloss-en">Reforma Monetaria y Salarial 2021</div><div class="gloss-desc">Paquete de reformas implementado el 1 de enero 2021. Unificó las monedas, aumentó salarios y precios estatales, y estableció nueva tasa de cambio única.</div></div>
+      <div class="gloss-card"><div class="gloss-es">CAR / IAC</div><div class="gloss-en">Índice de Adecuación de Capital</div><div class="gloss-desc">Capital / Activos ponderados por riesgo. Cuba adopta referencia de Basilea, pero requisitos específicos son fijados por el BCC y no divulgados públicamente.</div><div class="gloss-formula">CAR = Capital / APR</div></div>
+      <div class="gloss-card"><div class="gloss-es">NPL / Créditos en Mora</div><div class="gloss-en">Non-Performing Loans</div><div class="gloss-desc">Cartera vencida o en riesgo de incumplimiento. En Cuba la distinción entre crédito dirigido (estatal) y crédito comercial complica su medición estándar.</div><div class="gloss-formula">NPL% = Mora / Cartera Total</div></div>
+      <div class="gloss-card"><div class="gloss-es">Encaje Legal</div><div class="gloss-en">Reserve Requirement</div><div class="gloss-desc">Porcentaje de depósitos que los bancos deben mantener en el BCC. Instrumento de política monetaria. Fijado en ~10% según resoluciones del BCC.</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  <span>Sistema Bancario Cubano — Explorer de
